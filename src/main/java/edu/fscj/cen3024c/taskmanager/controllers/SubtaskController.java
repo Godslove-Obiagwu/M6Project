@@ -30,6 +30,7 @@ public class SubtaskController {
         return subtaskService.findAll();
     }
 
+    @CrossOrigin(origins = {"http://example.com", "http://localhost"})
     @GetMapping("/{id}")
     public SubtaskDTO getSubtaskById(@PathVariable Integer id) {
         return subtaskService.findById(id);

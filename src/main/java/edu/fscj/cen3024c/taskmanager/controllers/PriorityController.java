@@ -31,6 +31,7 @@ public class PriorityController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Priorities returned successfully")
     })
+    @CrossOrigin(origins = {"http://example.com", "http://localhost"})
     @GetMapping
     public List<Priority> getAllPriorities() {
         return priorityService.findAll();

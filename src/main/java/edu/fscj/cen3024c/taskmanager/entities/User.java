@@ -6,6 +6,11 @@
 package edu.fscj.cen3024c.taskmanager.entities;
 
 import jakarta.persistence.*;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Set;
 
 @Entity
@@ -20,7 +25,10 @@ public class User {
     private String username;
 
     @Column(nullable = false)
-    private String password;
+    private byte[] storedHash;
+
+    @Column(nullable = false)
+    private byte[] storedSalt;
 
     @ManyToMany(mappedBy = "users")
     private Set<Task> tasks;
@@ -30,7 +38,7 @@ public class User {
 
     public User(String username, String password) {
         this.username = username;
-        this.password = password;
+
     }
 
     // Getters & setters
@@ -40,9 +48,13 @@ public class User {
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
 
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
-
     public Set<Task> getTasks() { return tasks; }
     public void setTasks(Set<Task> tasks) { this.tasks = tasks; }
+
+    public byte[] getStoredSalt() { return storedSalt; }
+    public void setStoredSalt(byte[] storedSalt) {this.storedSalt = storedSalt;}
+
+    public byte[] getStoredHash() { return storedHash; }
+    public void setPasswordHash(byte[] storedHash) { this.storedHash = storedHash; }
+
 }

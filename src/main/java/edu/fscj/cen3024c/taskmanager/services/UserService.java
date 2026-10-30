@@ -15,6 +15,10 @@ import edu.fscj.cen3024c.taskmanager.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -56,7 +60,20 @@ public class UserService {
 
     @Transactional
     public UserDTO createUser(CreateUserRequestDTO request) {
-        User user = new User(request.getUsername(), request.getPassword());
+        byte[] salt = generateSalt();
+
+        byte[] hash;
+        try {
+            hash = hashPassword(request.getPassword(), salt);
+        } catch(Exception e) {
+            throw new RuntimeException("Error hashing password", e);
+        }
+        User user = new User();
+        user.setUsername(request.getUsername());
+
+        user.setStoredSalt(salt);
+        user.setPasswordHash(hash);
+
         User savedUser = userRepository.save(user);
         return convertToDTO(savedUser);
     }
@@ -65,7 +82,16 @@ public class UserService {
     public UserDTO updateUser(Integer id, UpdateUserRequestDTO request) {
         User existingUser = findByIdEntity(id);
         existingUser.setUsername(request.getUsername());
-        existingUser.setPassword(request.getPassword()); // will be hashed in a later module
+        byte[] salt = generateSalt();
+        byte[] hash;
+        try {
+            hash = hashPassword(request.getPassword(), salt);
+        } catch (Exception e) {
+            throw new RuntimeException("Error hashing password", e);
+        }
+
+        existingUser.setStoredSalt(salt);
+        existingUser.setPasswordHash(hash);
 
         User updatedUser = userRepository.save(existingUser);
         return convertToDTO(updatedUser);
@@ -91,5 +117,19 @@ public class UserService {
                 user.getUsername(),
                 taskTitles
         );
+    }
+
+    private byte[] generateSalt() {
+        var random = new SecureRandom();
+        var salt = new byte[128];
+        random.nextBytes(salt);
+        return salt;
+    }
+
+    private byte[] hashPassword(String password, byte[] salt) throws NoSuchAlgorithmException {
+        var md = MessageDigest.getInstance("SHA-512");
+        md.update(salt);
+        return md.digest(
+                password.getBytes(StandardCharsets.UTF_8));
     }
 }

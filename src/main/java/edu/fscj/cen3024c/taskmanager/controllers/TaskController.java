@@ -43,6 +43,7 @@ public class TaskController {
 
     // ===== WRITE endpoints accept DTOs and return DTOs =====
 
+    @CrossOrigin(origins = {"http://example.com", "http://localhost"})
     @PostMapping
     public TaskDTO createTask(@Valid @RequestBody CreateTaskRequestDTO request) {
         Priority priority = resolvePriority(request.getPriorityId());
